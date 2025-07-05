@@ -4,10 +4,17 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { INestApplication, Logger, ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  INestApplication,
+  Logger,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
   const port = configService.get<number>('PORT') || 3000;
@@ -46,7 +53,10 @@ async function bootstrap() {
     .build();
 
   // Use type assertion to resolve the compatibility issue
-  const document = SwaggerModule.createDocument(app as INestApplication, swaggerConfig);
+  const document = SwaggerModule.createDocument(
+    app as INestApplication,
+    swaggerConfig,
+  );
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(port);

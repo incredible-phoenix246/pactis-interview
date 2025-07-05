@@ -10,7 +10,6 @@ import { GlobalExceptionFilter } from './exceptions/global-exception.filter';
 import { ErrorLoggingInterceptor } from './interceptor/error-logging.interceptor';
 import { ValidationExceptionFilter } from './exceptions/validation-exception.filter';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,4 +43,4 @@ import { ValidationExceptionFilter } from './exceptions/validation-exception.fil
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
