@@ -32,5 +32,6 @@
       "@middlewares/*": ["src/middlewares/*"],
       "@definitions/*": ["src/definitions/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "wallet-backend"]
 }

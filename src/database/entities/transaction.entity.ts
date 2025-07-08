@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import Decimal from 'decimal.js';
+import type Decimal from 'decimal.js';
 import { Wallet } from './wallet.entity';
 import { QueueJob } from './queue-job.entity';
 import { AbstractBaseEntity } from '../base-entity';
@@ -23,6 +23,13 @@ import { TransactionStatus, TransactionType } from '@definitions/enums';
 @Index(['idempotency_key'], {
   unique: true,
   where: 'idempotency_key IS NOT NULL',
+})
+@Index(['from_wallet_id', 'created_at'])
+@Index(['to_wallet_id', 'created_at'])
+@Index(['status', 'created_at'])
+@Index(['type', 'status'])
+@Index(['status', 'created_at'], {
+  where: "status IN ('PENDING', 'PROCESSING')",
 })
 export class Transaction extends AbstractBaseEntity {
   @Column({
@@ -80,7 +87,7 @@ export class Transaction extends AbstractBaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true }) // Using JSONB for better performance
   metadata: Record<string, any>;
 
   @Column({
@@ -96,6 +103,25 @@ export class Transaction extends AbstractBaseEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'processed_at' })
   processed_at: Date;
+
+  // Reference transaction for linking TRANSFER_IN and TRANSFER_OUT
+  @Column({
+    type: 'uuid',
+    nullable: true,
+    name: 'reference_transaction_id',
+  })
+  reference_transaction_id: string;
+
+  // Exchange rate for multi-currency support (future)
+  @Column({
+    type: 'decimal',
+    precision: 18,
+    scale: 8,
+    nullable: true,
+    name: 'exchange_rate',
+    transformer: new DecimalTransformer(),
+  })
+  exchange_rate: Decimal;
 
   @ManyToOne(() => Wallet, (wallet) => wallet.outgoing_transactions)
   @JoinColumn({ name: 'from_wallet_id' })

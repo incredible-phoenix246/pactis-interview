@@ -9,6 +9,11 @@ import { Transaction } from './transaction.entity';
 @Index(['created_at'])
 @Index(['scheduled_at'])
 @Index(['job_id'], { unique: true })
+@Index(['queue_name', 'status'])
+@Index(['status', 'scheduled_at'])
+@Index(['scheduled_at'], {
+  where: "status IN ('PENDING', 'RETRYING')",
+})
 export class QueueJob extends AbstractBaseEntity {
   @Column({ type: 'varchar', length: 255, unique: true, name: 'job_id' })
   job_id: string;
@@ -26,7 +31,7 @@ export class QueueJob extends AbstractBaseEntity {
   })
   status: QueueJobStatus;
 
-  @Column({ type: 'json', nullable: true, name: 'job_data' })
+  @Column({ type: 'jsonb', nullable: true, name: 'job_data' })
   job_data: Record<
     string,
     string | number | boolean | object | string[] | number[] | null
@@ -46,6 +51,15 @@ export class QueueJob extends AbstractBaseEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'processed_at' })
   processed_at: Date;
+
+  @Column({ type: 'int', nullable: true, name: 'priority' })
+  priority: number;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'worker_id' })
+  worker_id: string;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'started_at' })
+  started_at: Date;
 
   @ManyToOne(() => Transaction, (transaction) => transaction.queue_jobs)
   @JoinColumn({ name: 'transaction_id' })
