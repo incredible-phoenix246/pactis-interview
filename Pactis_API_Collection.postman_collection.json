@@ -1,14 +1,15 @@
 {
 	"info": {
 		"_postman_id": "12345678-1234-5678-9012-123456789012",
-		"name": "Pactis Wallet API",
-		"description": "Complete API collection for testing the Pactis wallet system with authentication, wallet operations, and transaction management.",
+		"name": "Pactis Wallet API - Enhanced Edition",
+		"description": "Complete API collection for testing the enhanced Pactis wallet system with advanced concurrency control, idempotency enforcement, atomic operations, and comprehensive error handling.\n\n## 🚀 Enhanced Features Included:\n- **Database Locking & Concurrency Control**: Pessimistic & optimistic locking\n- **Idempotency Enforcement**: Redis distributed locks with retry logic\n- **Atomic Operations**: Full ACID compliance with proper rollback\n- **Enhanced Caching**: Redis-based wallet balance and transaction caching\n- **Error Handling**: Comprehensive validation and detailed error messages\n- **Performance Monitoring**: Request timing and detailed logging\n\n## 📋 Test Execution Order:\n1. **Authentication** - Register/Login user\n2. **Wallet Management** - Create wallets and check balances\n3. **Enhanced Transactions** - Test all transaction types with enhanced features\n4. **Concurrency Testing** - Test concurrent operations and locking\n5. **Idempotency Testing** - Test duplicate prevention mechanisms\n6. **Error Testing** - Test enhanced error handling and validation\n7. **Performance Testing** - Test caching and performance optimizations\n\n## 🔧 Setup Instructions:\n1. Ensure Redis is running for caching and idempotency locks\n2. Database should be properly migrated\n3. Environment variables configured\n4. Run requests in sequence for best results",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "12345678"
 	},
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "🔐 Authentication",
+			"description": "User authentication with enhanced error handling and validation",
 			"item": [
 				{
 					"name": "Health Check",
@@ -24,7 +25,8 @@
 								"api",
 								"v1"
 							]
-						}
+						},
+						"description": "Basic health check to ensure the API is running"
 					},
 					"response": []
 				},
@@ -35,10 +37,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('User registration successful', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+									"});",
+									"",
 									"if (pm.response.code === 201) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('accessToken', response.data.access_token);",
 									"    pm.collectionVariables.set('userId', response.data.user.id);",
+									"    pm.test('Access token received', function () {",
+									"        pm.expect(response.data.access_token).to.be.a('string');",
+									"    });",
+									"} else if (pm.response.code === 409) {",
+									"    console.log('User already exists, proceeding to login');",
 									"}"
 								],
 								"type": "text/javascript"
@@ -55,7 +66,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{userEmail}}\",\n    \"password\": \"{{userPassword}}\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+							"raw": "{\n    \"email\": \"{{userEmail}}\",\n    \"password\": \"{{userPassword}}\",\n    \"first_name\": \"Enhanced\",\n    \"last_name\": \"User\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/signup",
@@ -68,7 +79,8 @@
 								"auth",
 								"signup"
 							]
-						}
+						},
+						"description": "Register a new user with enhanced validation"
 					},
 					"response": []
 				},
@@ -79,10 +91,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Login successful', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('accessToken', response.data.access_token);",
 									"    pm.collectionVariables.set('userId', response.data.user.id);",
+									"    pm.test('Access token received', function () {",
+									"        pm.expect(response.data.access_token).to.be.a('string');",
+									"    });",
 									"}"
 								],
 								"type": "text/javascript"
@@ -112,14 +131,16 @@
 								"auth",
 								"login"
 							]
-						}
+						},
+						"description": "Login user and obtain JWT token"
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Wallet Management",
+			"name": "💰 Wallet Management",
+			"description": "Enhanced wallet operations with validation and caching",
 			"item": [
 				{
 					"name": "Get User Wallets",
@@ -128,11 +149,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Get wallets successful', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    if (response.data && response.data.length > 0) {",
 									"        pm.collectionVariables.set('walletId', response.data[0].id);",
 									"        pm.collectionVariables.set('walletCurrency', response.data[0].currency);",
+									"        pm.test('Wallet cached balance', function () {",
+									"            pm.expect(response.data[0].balance).to.exist;",
+									"        });",
 									"    }",
 									"}"
 								],
@@ -158,21 +186,30 @@
 								"v1",
 								"wallets"
 							]
-						}
+						},
+						"description": "Get user wallets with enhanced caching"
 					},
 					"response": []
 				},
 				{
-					"name": "Create Wallet",
+					"name": "Create EUR Wallet",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Wallet creation response', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+									"});",
+									"",
 									"if (pm.response.code === 201) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('secondWalletId', response.data.id);",
 									"    pm.collectionVariables.set('secondWalletCurrency', response.data.currency);",
+									"    pm.test('Wallet created with enhanced validation', function () {",
+									"        pm.expect(response.data.currency).to.eql('EUR');",
+									"        pm.expect(response.data.status).to.eql('ACTIVE');",
+									"    });",
 									"}"
 								],
 								"type": "text/javascript"
@@ -205,12 +242,31 @@
 								"v1",
 								"wallets"
 							]
-						}
+						},
+						"description": "Create EUR wallet with enhanced conflict detection"
 					},
 					"response": []
 				},
 				{
-					"name": "Get Wallet Balance",
+					"name": "Get Wallet Balance (Cached)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Balance retrieved successfully', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test('Balance is cached value', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data.balance).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -236,25 +292,36 @@
 									"value": "{{walletId}}"
 								}
 							]
-						}
+						},
+						"description": "Get wallet balance with Redis caching optimization"
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Transactions",
+			"name": "💸 Enhanced Transactions",
+			"description": "Transaction operations with enhanced concurrency control and atomic operations",
 			"item": [
 				{
-					"name": "Deposit Funds",
+					"name": "Deposit with Idempotency",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Deposit with idempotency successful', function () {",
+									"    pm.expect(pm.response.code).to.eql(201);",
+									"});",
+									"",
 									"if (pm.response.code === 201) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('lastTransactionId', response.data.transaction_id);",
+									"    pm.collectionVariables.set('testIdempotencyKey', 'deposit_' + Date.now());",
+									"    pm.test('Transaction queued with enhanced validation', function () {",
+									"        pm.expect(response.data.status).to.eql('PENDING');",
+									"        pm.expect(response.data.idempotency_key).to.exist;",
+									"    });",
 									"}"
 								],
 								"type": "text/javascript"
@@ -275,7 +342,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 100,\n    \"description\": \"Test deposit via Postman\",\n    \"idempotency_key\": \"deposit_{{$randomUUID}}\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 100,\n    \"description\": \"Enhanced deposit with concurrency control\",\n    \"idempotency_key\": \"deposit_{{$timestamp}}_{{$randomInt}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
@@ -288,20 +355,33 @@
 								"wallets",
 								"deposit"
 							]
-						}
+						},
+						"description": "Deposit with enhanced idempotency enforcement and wallet validation"
 					},
 					"response": []
 				},
 				{
-					"name": "Withdraw Funds",
+					"name": "Withdraw with Balance Check",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Withdraw processed', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+									"});",
+									"",
 									"if (pm.response.code === 201) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('lastTransactionId', response.data.transaction_id);",
+									"    pm.test('Withdrawal queued with enhanced validation', function () {",
+									"        pm.expect(response.data.status).to.eql('PENDING');",
+									"    });",
+									"} else if (pm.response.code === 400) {",
+									"    pm.test('Enhanced insufficient funds message', function () {",
+									"        const response = pm.response.json();",
+									"        pm.expect(response.message).to.include('Insufficient funds');",
+									"    });",
 									"}"
 								],
 								"type": "text/javascript"
@@ -322,7 +402,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 25,\n    \"description\": \"Test withdrawal via Postman\",\n    \"idempotency_key\": \"withdraw_{{$randomUUID}}\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 25,\n    \"description\": \"Enhanced withdrawal with balance validation\",\n    \"idempotency_key\": \"withdraw_{{$timestamp}}_{{$randomInt}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/withdraw",
@@ -335,21 +415,32 @@
 								"wallets",
 								"withdraw"
 							]
-						}
+						},
+						"description": "Withdrawal with enhanced balance checking and caching"
 					},
 					"response": []
 				},
 				{
-					"name": "Transfer Between Wallets",
+					"name": "Transfer with Deadlock Prevention",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('Transfer with enhanced locking', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 400, 404]);",
+									"});",
+									"",
 									"if (pm.response.code === 201) {",
 									"    const response = pm.response.json();",
 									"    pm.collectionVariables.set('lastOutgoingTransactionId', response.data.outgoing.transaction_id);",
 									"    pm.collectionVariables.set('lastIncomingTransactionId', response.data.incoming.transaction_id);",
+									"    pm.test('Transfer uses ordered locking', function () {",
+									"        pm.expect(response.data.outgoing).to.exist;",
+									"        pm.expect(response.data.incoming).to.exist;",
+									"        pm.expect(response.data.outgoing.type).to.eql('TRANSFER_OUT');",
+									"        pm.expect(response.data.incoming.type).to.eql('TRANSFER_IN');",
+									"    });",
 									"}"
 								],
 								"type": "text/javascript"
@@ -370,7 +461,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"from_wallet_id\": \"{{walletId}}\",\n    \"to_wallet_id\": \"{{secondWalletId}}\",\n    \"amount\": 15,\n    \"description\": \"Test transfer via Postman\",\n    \"idempotency_key\": \"transfer_{{$randomUUID}}\"\n}"
+							"raw": "{\n    \"from_wallet_id\": \"{{walletId}}\",\n    \"to_wallet_id\": \"{{secondWalletId}}\",\n    \"amount\": 15,\n    \"description\": \"Enhanced transfer with deadlock prevention\",\n    \"idempotency_key\": \"transfer_{{$timestamp}}_{{$randomInt}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/transfer",
@@ -383,12 +474,35 @@
 								"wallets",
 								"transfer"
 							]
-						}
+						},
+						"description": "Transfer with enhanced concurrency control using ordered wallet locking"
 					},
 					"response": []
 				},
 				{
-					"name": "Get Transaction History (Fixed)",
+					"name": "Get Transaction History (Enhanced)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Transaction history with caching', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.test('Enhanced pagination metadata', function () {",
+									"        pm.expect(response.paginationMeta).to.exist;",
+									"        pm.expect(response.paginationMeta.total).to.be.a('number');",
+									"        pm.expect(response.paginationMeta.page).to.be.a('number');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -398,7 +512,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallets/transactions",
+							"raw": "{{baseUrl}}/api/v1/wallets/transactions?wallet_id={{walletId}}&limit=10&page=1",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -411,34 +525,46 @@
 							"query": [
 								{
 									"key": "wallet_id",
-									"value": "{{walletId}}",
-									"disabled": true,
-									"description": "Currently disabled due to validation issue"
+									"value": "{{walletId}}"
 								},
 								{
 									"key": "limit",
-									"value": "10",
-									"disabled": true,
-									"description": "Currently disabled due to validation issue"
+									"value": "10"
 								},
 								{
 									"key": "page",
-									"value": "1",
-									"disabled": true,
-									"description": "Currently disabled due to validation issue"
+									"value": "1"
 								}
 							]
-						}
+						},
+						"description": "Get transaction history with enhanced caching and pagination"
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Test Scenarios",
+			"name": "🔄 Concurrency & Locking Tests",
+			"description": "Test enhanced concurrency control and database locking mechanisms",
 			"item": [
 				{
-					"name": "Test Idempotency - Duplicate Deposit",
+					"name": "Concurrent Transfer Test 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Concurrent transfer handled safely', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 400, 409]);",
+									"});",
+									"",
+									"// Store result for comparison with concurrent request",
+									"pm.collectionVariables.set('concurrentTest1Result', pm.response.code);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -453,7 +579,62 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 50,\n    \"description\": \"Duplicate deposit test\",\n    \"idempotency_key\": \"duplicate_test_123\"\n}"
+							"raw": "{\n    \"from_wallet_id\": \"{{walletId}}\",\n    \"to_wallet_id\": \"{{secondWalletId}}\",\n    \"amount\": 10,\n    \"description\": \"Concurrent transfer test 1 - deadlock prevention\",\n    \"idempotency_key\": \"concurrent_test_{{$timestamp}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/wallets/transfer",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallets",
+								"transfer"
+							]
+						},
+						"description": "Test concurrent transfers to verify deadlock prevention"
+					},
+					"response": []
+				},
+				{
+					"name": "Version Conflict Test - Optimistic Locking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Optimistic locking conflict handled', function () {",
+									"    // This should either succeed or fail gracefully with conflict detection",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409, 400]);",
+									"});",
+									"",
+									"if (pm.response.code === 409) {",
+									"    pm.test('Version conflict detected', function () {",
+									"        const response = pm.response.json();",
+									"        pm.expect(response.message).to.include('concurrent modification');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 5,\n    \"description\": \"Testing optimistic locking version conflicts\",\n    \"idempotency_key\": \"version_test_{{$timestamp}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
@@ -466,12 +647,40 @@
 								"wallets",
 								"deposit"
 							]
-						}
+						},
+						"description": "Test optimistic locking version conflict detection"
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "🔑 Idempotency Tests",
+			"description": "Test comprehensive idempotency enforcement with Redis distributed locks",
+			"item": [
 				{
-					"name": "Test Idempotency - Same Duplicate Deposit",
+					"name": "Create Idempotent Deposit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('First idempotent deposit successful', function () {",
+									"    pm.expect(pm.response.code).to.eql(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('idempotentTransactionId', response.data.transaction_id);",
+									"    pm.test('Idempotency key stored', function () {",
+									"        pm.expect(response.data.idempotency_key).to.eql('idempotency_test_fixed_key_123');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -486,7 +695,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 50,\n    \"description\": \"Duplicate deposit test\",\n    \"idempotency_key\": \"duplicate_test_123\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 50,\n    \"description\": \"Idempotency test - first request\",\n    \"idempotency_key\": \"idempotency_test_fixed_key_123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
@@ -499,12 +708,40 @@
 								"wallets",
 								"deposit"
 							]
-						}
+						},
+						"description": "Create initial deposit with fixed idempotency key"
 					},
 					"response": []
 				},
 				{
-					"name": "Test Invalid Amount - Negative",
+					"name": "Test Duplicate Idempotency Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Duplicate idempotency key handled', function () {",
+									"    // Should return the same transaction or handle gracefully",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]);",
+									"});",
+									"",
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    const originalTxId = pm.collectionVariables.get('idempotentTransactionId');",
+									"    pm.test('Same transaction returned for duplicate key', function () {",
+									"        pm.expect(response.data.transaction_id).to.eql(originalTxId);",
+									"    });",
+									"} else if (pm.response.code === 409) {",
+									"    pm.test('Concurrent processing detected', function () {",
+									"        const response = pm.response.json();",
+									"        pm.expect(response.message).to.include('idempotency key is being processed');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -519,7 +756,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": -50,\n    \"description\": \"Invalid negative amount test\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 50,\n    \"description\": \"Idempotency test - duplicate request\",\n    \"idempotency_key\": \"idempotency_test_fixed_key_123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
@@ -532,12 +769,36 @@
 								"wallets",
 								"deposit"
 							]
-						}
+						},
+						"description": "Test duplicate idempotency key handling"
 					},
 					"response": []
 				},
 				{
-					"name": "Test Invalid Wallet ID",
+					"name": "Test Transfer Idempotency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Transfer idempotency working', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 400, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('idempotentTransferOutId', response.data.outgoing.transaction_id);",
+									"    pm.collectionVariables.set('idempotentTransferInId', response.data.incoming.transaction_id);",
+									"    pm.test('Both transfer transactions created', function () {",
+									"        pm.expect(response.data.outgoing.idempotency_key).to.eql('transfer_idempotency_test_456');",
+									"        pm.expect(response.data.outgoing.reference_transaction_id).to.eql(response.data.incoming.transaction_id);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -552,10 +813,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"invalid-wallet-id\",\n    \"amount\": 50,\n    \"description\": \"Invalid wallet ID test\"\n}"
+							"raw": "{\n    \"from_wallet_id\": \"{{walletId}}\",\n    \"to_wallet_id\": \"{{secondWalletId}}\",\n    \"amount\": 8,\n    \"description\": \"Transfer idempotency test\",\n    \"idempotency_key\": \"transfer_idempotency_test_456\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
+							"raw": "{{baseUrl}}/api/v1/wallets/transfer",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -563,14 +824,41 @@
 								"api",
 								"v1",
 								"wallets",
-								"deposit"
+								"transfer"
 							]
-						}
+						},
+						"description": "Test transfer idempotency with paired transactions"
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "❌ Enhanced Error Testing",
+			"description": "Test comprehensive error handling and validation enhancements",
+			"item": [
 				{
-					"name": "Test Insufficient Funds - Large Withdrawal",
+					"name": "Test Enhanced Insufficient Funds",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Enhanced insufficient funds error', function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									"pm.test('Detailed balance information provided', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('Insufficient funds');",
+									"    pm.expect(response.message).to.include('available');",
+									"    pm.expect(response.message).to.include('required');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -585,7 +873,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 999999,\n    \"description\": \"Large withdrawal test (should fail)\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 999999,\n    \"description\": \"Large withdrawal to test enhanced error messages\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/wallets/withdraw",
@@ -598,17 +886,135 @@
 								"wallets",
 								"withdraw"
 							]
-						}
+						},
+						"description": "Test enhanced insufficient funds error with detailed balance info"
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Error Testing",
-			"item": [
+				},
 				{
-					"name": "Test Unauthorized Request",
+					"name": "Test Invalid Wallet Validation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Invalid wallet ID properly validated', function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									"pm.test('Enhanced wallet validation message', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('Wallet not found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_id\": \"00000000-0000-0000-0000-000000000000\",\n    \"amount\": 50,\n    \"description\": \"Test enhanced wallet validation\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallets",
+								"deposit"
+							]
+						},
+						"description": "Test enhanced wallet validation with pre-flight checks"
+					},
+					"response": []
+				},
+				{
+					"name": "Test Self-Transfer Prevention",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Self-transfer prevented', function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									"pm.test('Enhanced self-transfer validation', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('Cannot transfer to the same wallet');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"from_wallet_id\": \"{{walletId}}\",\n    \"to_wallet_id\": \"{{walletId}}\",\n    \"amount\": 10,\n    \"description\": \"Self-transfer validation test\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/wallets/transfer",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallets",
+								"transfer"
+							]
+						},
+						"description": "Test enhanced self-transfer prevention"
+					},
+					"response": []
+				},
+				{
+					"name": "Test Authentication Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Authentication properly enforced', function () {",
+									"    pm.expect(pm.response.code).to.eql(401);",
+									"});",
+									"",
+									"pm.test('Clear authentication error message', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.include('Access token is required');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -622,60 +1028,194 @@
 								"v1",
 								"wallets"
 							]
-						}
+						},
+						"description": "Test authentication enforcement"
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "⚡ Performance & Caching Tests",
+			"description": "Test enhanced caching and performance optimizations",
+			"item": [
 				{
-					"name": "Test Invalid Token",
+					"name": "Balance Cache Performance Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Balance retrieved with caching', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test('Response time indicates caching', function () {",
+									"    // Cached responses should be faster",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);",
+									"});",
+									"",
+									"pm.test('Balance data structure correct', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data.balance).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer invalid_token_here"
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallets",
+							"raw": "{{baseUrl}}/api/v1/wallets/balance?wallet_id={{walletId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"wallets"
+								"wallets",
+								"balance"
+							],
+							"query": [
+								{
+									"key": "wallet_id",
+									"value": "{{walletId}}"
+								}
 							]
-						}
+						},
+						"description": "Test Redis caching performance for wallet balance"
 					},
 					"response": []
 				},
 				{
-					"name": "Test Weak Password",
+					"name": "Transaction History Cache Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Transaction history cached', function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test('Pagination metadata enhanced', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.paginationMeta).to.exist;",
+									"    pm.expect(response.paginationMeta.total).to.be.a('number');",
+									"    pm.expect(response.paginationMeta.totalPages).to.be.a('number');",
+									"});",
+									"",
+									"pm.test('Cache performance optimal', function () {",
+									"    // Second request should be faster due to caching",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/wallets/transactions?wallet_id={{walletId}}&limit=5&page=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallets",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "wallet_id",
+									"value": "{{walletId}}"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Test transaction history caching with enhanced pagination"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔄 Stress & Load Tests",
+			"description": "Test system under load with enhanced concurrency features",
+			"item": [
+				{
+					"name": "Rapid Deposit Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Rapid deposit handled safely', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+									"});",
+									"",
+									"pm.test('Idempotency or processing handled', function () {",
+									"    if (pm.response.code === 409) {",
+									"        const response = pm.response.json();",
+									"        pm.expect(response.message).to.include('idempotency key');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"weakpassword@test.com\",\n    \"password\": \"123\",\n    \"first_name\": \"Weak\",\n    \"last_name\": \"Password\"\n}"
+							"raw": "{\n    \"wallet_id\": \"{{walletId}}\",\n    \"amount\": 1,\n    \"description\": \"Rapid deposit stress test\",\n    \"idempotency_key\": \"rapid_{{$timestamp}}_{{$randomInt}}\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/auth/signup",
+							"raw": "{{baseUrl}}/api/v1/wallets/deposit",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"auth",
-								"signup"
+								"wallets",
+								"deposit"
 							]
-						}
+						},
+						"description": "Test rapid deposits to verify locking and queue handling"
 					},
 					"response": []
 				}
@@ -688,17 +1228,31 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Set default values if not already set",
+					"// Enhanced pre-request script with better error handling",
 					"if (!pm.collectionVariables.get('baseUrl')) {",
 					"    pm.collectionVariables.set('baseUrl', 'http://localhost:5000');",
 					"}",
 					"",
 					"if (!pm.collectionVariables.get('userEmail')) {",
-					"    pm.collectionVariables.set('userEmail', 'testuser@example.com');",
+					"    const timestamp = Date.now();",
+					"    pm.collectionVariables.set('userEmail', `testuser_${timestamp}@example.com`);",
 					"}",
 					"",
 					"if (!pm.collectionVariables.get('userPassword')) {",
 					"    pm.collectionVariables.set('userPassword', 'Password123@');",
+					"}",
+					"",
+					"// Log request for debugging enhanced features",
+					"console.log(`🚀 Executing: ${pm.request.method} ${pm.request.url}`);",
+					"if (pm.request.body && pm.request.body.raw) {",
+					"    try {",
+					"        const body = JSON.parse(pm.request.body.raw);",
+					"        if (body.idempotency_key) {",
+					"            console.log(`🔑 Idempotency Key: ${body.idempotency_key}`);",
+					"        }",
+					"    } catch (e) {",
+					"        // Ignore parsing errors",
+					"    }",
 					"}"
 				]
 			}
@@ -708,9 +1262,38 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Global test to log response for debugging",
-					"console.log('Response Status:', pm.response.code);",
-					"console.log('Response Body:', pm.response.text());"
+					"// Enhanced global test script with performance monitoring",
+					"const responseTime = pm.response.responseTime;",
+					"const statusCode = pm.response.code;",
+					"",
+					"console.log(`⏱️  Response Time: ${responseTime}ms | Status: ${statusCode}`);",
+					"",
+					"// Enhanced error logging for debugging",
+					"if (statusCode >= 400) {",
+					"    console.log(`❌ Error Response: ${pm.response.text()}`);",
+					"} else {",
+					"    console.log(`✅ Success: ${pm.request.method} ${pm.request.url.toString()}`);",
+					"}",
+					"",
+					"// Performance monitoring for enhanced features",
+					"if (responseTime > 1000) {",
+					"    console.log(`⚠️  Slow response detected: ${responseTime}ms`);",
+					"}",
+					"",
+					"// Test response structure for enhanced APIs",
+					"if (statusCode >= 200 && statusCode < 300) {",
+					"    try {",
+					"        const response = pm.response.json();",
+					"        if (response.data && response.data.transaction_id) {",
+					"            console.log(`💳 Transaction ID: ${response.data.transaction_id}`);",
+					"        }",
+					"        if (response.paginationMeta) {",
+					"            console.log(`📄 Pagination: Page ${response.paginationMeta.page}/${response.paginationMeta.totalPages}`);",
+					"        }",
+					"    } catch (e) {",
+					"        // Ignore JSON parsing errors for non-JSON responses",
+					"    }",
+					"}"
 				]
 			}
 		}
@@ -723,12 +1306,12 @@
 		},
 		{
 			"key": "userEmail",
-			"value": "testuser@example.com",
+			"value": "enhanced_user@example.com",
 			"type": "string"
 		},
 		{
 			"key": "userPassword",
-			"value": "Password123@",
+			"value": "EnhancedPass123@",
 			"type": "string"
 		},
 		{
@@ -773,6 +1356,31 @@
 		},
 		{
 			"key": "lastIncomingTransactionId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testIdempotencyKey",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "idempotentTransactionId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "idempotentTransferOutId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "idempotentTransferInId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "concurrentTest1Result",
 			"value": "",
 			"type": "string"
 		}

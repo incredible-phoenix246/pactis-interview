@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -33,7 +34,8 @@ export class QueueService {
   private readonly logger = new Logger(QueueService.name);
 
   constructor(
-    @InjectQueue('wallet-transactions') private readonly transactionQueue: Queue,
+    @InjectQueue('wallet-transactions')
+    private readonly transactionQueue: Queue,
   ) {}
 
   async addDepositJob(data: DepositJobData): Promise<void> {

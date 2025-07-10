@@ -144,4 +144,9 @@ export abstract class AbstractModelAction<T extends ObjectLiteral> {
       paginationMeta: { total: query.length },
     };
   }
+
+  // Add method for complex queries
+  getQueryBuilder(alias?: string) {
+    return this.repository.createQueryBuilder(alias);
+  }
 }

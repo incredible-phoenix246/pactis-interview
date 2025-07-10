@@ -1,5 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsNumber,
@@ -8,6 +6,7 @@ import {
   IsEnum,
   IsUUID,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { TransactionType, TransactionStatus } from '@definitions/enums';
 
 export class TransactionHistoryDto {
@@ -25,7 +24,6 @@ export class TransactionHistoryDto {
     minimum: 1,
   })
   @IsOptional()
-  @Type(() => Number)
   @IsNumber({}, { message: 'Page must be a number' })
   @Min(1, { message: 'Page must be at least 1' })
   page?: number = 1;
@@ -38,7 +36,6 @@ export class TransactionHistoryDto {
     maximum: 100,
   })
   @IsOptional()
-  @Type(() => Number)
   @IsNumber({}, { message: 'Limit must be a number' })
   @Min(1, { message: 'Limit must be at least 1' })
   @Max(100, { message: 'Limit cannot exceed 100' })

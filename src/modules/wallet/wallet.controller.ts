@@ -20,14 +20,13 @@ import { CreateWalletDto } from './dto/create-wallet.dto';
 import { DepositDto } from './dto/deposit.dto';
 import { WithdrawDto } from './dto/withdraw.dto';
 import { TransferDto } from './dto/transfer.dto';
-
-
-import type { TransactionHistoryDto } from './dto/transaction-history.dto';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import type { User } from '@database/entities/user.entity';
 import { Wallet } from '@database/entities/wallet.entity';
 import { Transaction } from '@database/entities/transaction.entity';
 import { buildResponse } from '@helpers/format-response';
+import { PaginationMeta } from '@definitions/interfaces';
+import { TransactionStatus, TransactionType } from '@definitions/enums';
 
 @ApiTags('Wallet Operations')
 @Controller('wallets')
@@ -137,17 +136,28 @@ export class WalletController {
   }
 
   @Get('transactions')
-  @ApiOperation({ summary: 'Get transaction history for a wallet' })
-  @ApiResponse({
-    status: 200,
-    description: 'Transaction history retrieved successfully',
-  })
-  async getTransactionHistory(@Query() historyDto: TransactionHistoryDto) {
-    const result = await this.walletService.getTransactionHistory(historyDto);
+  async getTransactionHistory(
+    @Query('wallet_id') wallet_id: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: TransactionType,
+    @Query('status') status?: TransactionStatus,
+  ) {
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+    const result = await this.walletService.getTransactionHistory({
+      wallet_id,
+      page: pageNum,
+      limit: limitNum,
+      type,
+      status,
+    });
+
     return buildResponse(
       result.payload,
       'Transaction history retrieved successfully',
-      result.paginationMeta,
+      result.paginationMeta as PaginationMeta,
     );
   }
+
 }

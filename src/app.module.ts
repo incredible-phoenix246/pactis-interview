@@ -42,7 +42,7 @@ import { QueueModule } from '@modules/queue/queue.module';
     AuthModule,
     WalletModule,
     RedisModule,
-    QueueModule
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [
@@ -68,4 +68,4 @@ import { QueueModule } from '@modules/queue/queue.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

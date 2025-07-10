@@ -1,20 +1,20 @@
-import { EntityManager } from 'typeorm';
+import { EntityManager, FindOptionsWhere } from 'typeorm';
 
-type FindRecordGeneric<WhereOptions> = {
-  findOptions: WhereOptions;
+type FindRecordGeneric<Entity> = {
+  findOptions: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[];
   transactionOptions:
-    | {
-        useTransaction: false;
-      }
-    | {
-        useTransaction: true;
-        transaction: EntityManager;
-      };
+  | {
+    useTransaction: false;
+  }
+  | {
+    useTransaction: true;
+    transaction: EntityManager;
+  };
   paginationPayload?: {
     limit: number;
     page: number;
   };
-  order?: Record<string, 'ASC' | 'DESC'>;
+  order?: Record<keyof Partial<Entity>, 'ASC' | 'DESC'>;
 };
 
 export default FindRecordGeneric;

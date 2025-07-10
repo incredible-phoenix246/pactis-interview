@@ -1,15 +1,15 @@
-import helmet from 'helmet';
-import { AppModule } from './app.module';
-import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import {
   INestApplication,
   Logger,
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -21,9 +21,9 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
+      transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
   );
@@ -52,7 +52,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  // Use type assertion to resolve the compatibility issue
+
   const document = SwaggerModule.createDocument(
     app as INestApplication,
     swaggerConfig,
